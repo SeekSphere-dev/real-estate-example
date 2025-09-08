@@ -5,19 +5,29 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:db": "npx tsx src/lib/test-database.ts",
+    "test:connection": "npx tsx scripts/test-connection.ts",
+    "generate-data": "npx tsx scripts/generate-data.ts",
+    "validate-data": "npx tsx scripts/validate-data.ts"
   },
   "dependencies": {
+    "@types/pg": "^8.15.5",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.542.0",
+    "next": "15.5.2",
+    "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.2"
+    "seeksphere-sdk": "^1.0.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "tsx": "^4.19.2",
+    "typescript": "^5"
   }
 }
