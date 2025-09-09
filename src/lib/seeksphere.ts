@@ -108,7 +108,8 @@ const fallbackToTraditionalSearch = async (
   limit: number
 ): Promise<SeeksphereSearchResult> => {
   try {
-    const { searchProperties, createPaginationParams } = await import('./database');
+    const { searchProperties } = await import('./database');
+    const { createPaginationParams } = await import('./types');
     
     const pagination = createPaginationParams(page, limit);
     const filters = { query };
