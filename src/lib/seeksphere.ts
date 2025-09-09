@@ -1,25 +1,18 @@
-import { SeeksphereSearchResult, Property, SearchFilters } from './types';
+import { SeeksphereSearchResult, Property } from './types';
 
 // Import seeksphere SDK
-let SeeksphereClient: any;
+let SeekSphereClient: any;
 try {
-  SeeksphereClient = require('seeksphere-sdk');
+  const sdk = require('seeksphere-sdk');
+  SeekSphereClient = sdk.SeekSphereClient;
 } catch (error) {
   console.warn('Seeksphere SDK not available:', error);
 }
 
-// Seeksphere configuration interface
-interface SeeksphereConfig {
-  apiKey?: string;
-  indexName?: string;
-  endpoint?: string;
-}
-
-// Initialize seeksphere configuration
-const seeksphereConfig: SeeksphereConfig = {
+// Seeksphere configuration
+const seeksphereConfig = {
   apiKey: process.env.SEEKSPHERE_API_KEY,
-  indexName: process.env.SEEKSPHERE_INDEX_NAME || 'real_estate_properties',
-  endpoint: process.env.SEEKSPHERE_ENDPOINT,
+  timeout: 30000,
 };
 
 // Global seeksphere client instance
@@ -29,217 +22,220 @@ let seeksphereClient: any = null;
  * Initialize seeksphere client
  */
 const initializeClient = () => {
-  if (!SeeksphereClient) {
-    throw new Error('Seeksphere SDK not available');
+  if (!SeekSphereClient) {
+    throw new Error('Seeksphere SDK not available - please install seeksphere-sdk package');
   }
-  
+
+  if (!seeksphereConfig.apiKey) {
+    throw new Error('Seeksphere API key not configured - please set SEEKSPHERE_API_KEY environment variable');
+  }
+
   if (!seeksphereClient) {
-    seeksphereClient = new SeeksphereClient({
-      apiKey: seeksphereConfig.apiKey,
-      indexName: seeksphereConfig.indexName,
-      endpoint: seeksphereConfig.endpoint,
-    });
+    try {
+      seeksphereClient = new SeekSphereClient({
+        apiKey: seeksphereConfig.apiKey,
+        timeout: seeksphereConfig.timeout,
+      });
+    } catch (error) {
+      throw new Error(`Failed to initialize Seeksphere client: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
-  
+
   return seeksphereClient;
 };
 
 /**
- * Initialize seeksphere with property data
- */
-export const initializeSeeksphere = async (properties: Property[]): Promise<boolean> => {
-  try {
-    const client = initializeClient();
-    
-    // Transform properties for seeksphere indexing
-    const documents = properties.map(property => ({
-      id: property.id,
-      title: property.title,
-      description: property.description || '',
-      location: `${property.street_address}, ${property.city?.name || ''}, ${property.province?.name || ''}`,
-      price: property.list_price || property.monthly_rent || 0,
-      bedrooms: property.bedrooms || 0,
-      bathrooms: property.bathrooms || 0,
-      sqft: property.total_area_sqft || 0,
-      property_type: property.property_type?.name || '',
-      listing_type: property.listing_type?.name || '',
-      features: property.features?.map(f => f.name).join(', ') || '',
-      agent: property.agent ? `${property.agent.first_name} ${property.agent.last_name}` : '',
-      neighborhood: property.neighborhood?.name || '',
-    }));
-    
-    await client.indexDocuments(documents);
-    console.log(`Indexed ${documents.length} properties with seeksphere`);
-    return true;
-  } catch (error) {
-    console.error('Error initializing seeksphere:', error);
-    return false;
-  }
-};
-
-/**
- * Perform a search using seeksphere
+ * Search using seeksphere - just pass the query string directly
  */
 export const searchWithSeeksphere = async (
-  filters: SearchFilters,
+  query: string,
   page: number = 1,
   limit: number = 20
 ): Promise<SeeksphereSearchResult> => {
   const startTime = Date.now();
-  
+
   try {
+    // Check if seeksphere is available first
+    if (!isSeeksphereAvailable()) {
+      throw new Error('Seeksphere service is not available');
+    }
+
     const client = initializeClient();
-    
-    // Build seeksphere query
-    const query = buildSeeksphereQuery(filters);
-    
-    // Perform search
-    const searchOptions = {
-      query,
-      limit,
-      offset: (page - 1) * limit,
-      includeScores: true,
-      includeSuggestions: true,
-    };
-    
-    const result = await client.search(searchOptions);
-    
-    // Transform seeksphere results back to our Property format
-    const properties = await transformSeeksphereResults(result.documents || []);
-    
+
+    // Use seeksphere to convert natural language to SQL
+    const searchResult = await client.search({
+      query: query
+    }, 'sql_only');
+
+    // Execute the generated SQL query against our database
+    const properties = await executeSeeksphereSQL(searchResult);
+
     const searchTime = Date.now() - startTime;
-    
+
     return {
       properties,
-      total: result.total || 0,
+      total: properties.length,
       page,
       limit,
-      filters,
-      relevance_scores: result.scores || [],
+      filters: { query },
+      relevance_scores: [],
       search_time_ms: searchTime,
-      suggestions: result.suggestions || [],
+      suggestions: [],
+      sql_query: searchResult.sql_query || '',
+      seeksphere_response: searchResult,
     };
   } catch (error) {
     console.error('Error searching with seeksphere:', error);
     
-    // Fallback to empty result
+    // Graceful degradation - fall back to traditional search
+    const fallbackResult = await fallbackToTraditionalSearch(query, page, limit);
+    
+    return {
+      ...fallbackResult,
+      search_time_ms: Date.now() - startTime,
+      error: error instanceof Error ? error.message : 'Seeksphere search failed',
+      fallback_used: true,
+    };
+  }
+};
+
+/**
+ * Fallback to traditional search when seeksphere fails
+ */
+const fallbackToTraditionalSearch = async (
+  query: string,
+  page: number,
+  limit: number
+): Promise<Partial<SeeksphereSearchResult>> => {
+  try {
+    const { searchProperties, createPaginationParams } = await import('./database');
+    
+    const pagination = createPaginationParams(page, limit);
+    const filters = { query };
+    const sort = { field: 'date' as const, direction: 'desc' as const };
+    
+    const result = await searchProperties(filters, pagination, sort);
+    
+    return {
+      properties: result.properties,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      filters: { query },
+      relevance_scores: [],
+      suggestions: [],
+    };
+  } catch (fallbackError) {
+    console.error('Fallback search also failed:', fallbackError);
     return {
       properties: [],
       total: 0,
       page,
       limit,
-      filters,
+      filters: { query },
       relevance_scores: [],
-      search_time_ms: Date.now() - startTime,
       suggestions: [],
     };
   }
 };
 
 /**
- * Build seeksphere query from search filters
+ * Execute the SQL query generated by seeksphere
  */
-const buildSeeksphereQuery = (filters: SearchFilters): string => {
-  const queryParts: string[] = [];
-  
-  // Main text query
-  if (filters.query) {
-    queryParts.push(filters.query);
-  }
-  
-  // Property type filter
-  if (filters.property_type) {
-    queryParts.push(`property_type:${filters.property_type}`);
-  }
-  
-  // Listing type filter
-  if (filters.listing_type) {
-    queryParts.push(`listing_type:${filters.listing_type}`);
-  }
-  
-  // Location filters
-  if (filters.city) {
-    queryParts.push(`location:${filters.city}`);
-  }
-  
-  if (filters.province) {
-    queryParts.push(`location:${filters.province}`);
-  }
-  
-  // Price range
-  if (filters.min_price || filters.max_price) {
-    const minPrice = filters.min_price || 0;
-    const maxPrice = filters.max_price || 999999999;
-    queryParts.push(`price:[${minPrice} TO ${maxPrice}]`);
-  }
-  
-  // Bedroom filter
-  if (filters.bedrooms) {
-    queryParts.push(`bedrooms:${filters.bedrooms}`);
-  }
-  
-  // Bathroom filter
-  if (filters.bathrooms) {
-    queryParts.push(`bathrooms:${filters.bathrooms}`);
-  }
-  
-  // Square footage range
-  if (filters.min_sqft || filters.max_sqft) {
-    const minSqft = filters.min_sqft || 0;
-    const maxSqft = filters.max_sqft || 999999;
-    queryParts.push(`sqft:[${minSqft} TO ${maxSqft}]`);
-  }
-  
-  // Features
-  if (filters.features && filters.features.length > 0) {
-    const featuresQuery = filters.features.map(f => `features:${f}`).join(' OR ');
-    queryParts.push(`(${featuresQuery})`);
-  }
-  
-  return queryParts.join(' AND ') || '*';
-};
+const executeSeeksphereSQL = async (searchResult: any): Promise<Property[]> => {
+  try {
+    const { query } = await import('./database');
 
-/**
- * Transform seeksphere results back to Property objects
- */
-const transformSeeksphereResults = async (documents: any[]): Promise<Property[]> => {
-  // Import database functions
-  const { getPropertyById } = await import('./database');
-  
-  // Get full property data for each result
-  const properties: Property[] = [];
-  
-  for (const doc of documents) {
-    try {
-      const property = await getPropertyById(doc.id);
-      if (property) {
-        properties.push(property);
-      }
-    } catch (error) {
-      console.error(`Error fetching property ${doc.id}:`, error);
+    if (!searchResult.success) {
+      console.warn('Seeksphere search failed:', searchResult.error || 'Unknown error');
+      return [];
     }
+
+    if (!searchResult.sql_query) {
+      console.warn('No SQL query generated by seeksphere');
+      return [];
+    }
+
+    console.log('Generated SQL:', searchResult.sql_query);
+
+    // Execute the SQL query
+    const result = await query(searchResult.sql_query);
+
+    // Get full property objects
+    const { getPropertyById } = await import('./database');
+    const properties: Property[] = [];
+
+    for (const row of result.rows) {
+      if (row.id) {
+        const property = await getPropertyById(row.id);
+        if (property) {
+          properties.push(property);
+        }
+      }
+    }
+
+    return properties;
+  } catch (error) {
+    console.error('Error executing seeksphere SQL:', error);
+    return [];
   }
-  
-  return properties;
 };
 
 /**
- * Get search suggestions from seeksphere
+ * Get search suggestions based on query
  */
 export const getSearchSuggestions = async (query: string): Promise<string[]> => {
   try {
+    if (!query.trim()) {
+      return [];
+    }
+
     const client = initializeClient();
-    
-    const result = await client.suggest({
-      query,
-      limit: 5,
+
+    // Use seeksphere to get suggestions
+    const result = await client.getSuggestions({
+      query: query.trim(),
+      limit: 5
     });
-    
+
     return result.suggestions || [];
   } catch (error) {
     console.error('Error getting search suggestions:', error);
-    return [];
+    
+    // Fallback to basic suggestions
+    return generateFallbackSuggestions(query);
   }
+};
+
+/**
+ * Generate fallback suggestions when seeksphere is not available
+ */
+const generateFallbackSuggestions = (query: string): string[] => {
+  const suggestions: string[] = [];
+  const lowerQuery = query.toLowerCase();
+
+  // Basic property type suggestions
+  if (lowerQuery.includes('house') || lowerQuery.includes('home')) {
+    suggestions.push('Modern house with garage');
+    suggestions.push('Family home near schools');
+  }
+  
+  if (lowerQuery.includes('condo') || lowerQuery.includes('apartment')) {
+    suggestions.push('Downtown condo with parking');
+    suggestions.push('Luxury apartment with amenities');
+  }
+
+  // Location-based suggestions
+  if (lowerQuery.includes('downtown') || lowerQuery.includes('city')) {
+    suggestions.push('Downtown properties with transit access');
+  }
+
+  // Feature-based suggestions
+  if (lowerQuery.includes('parking') || lowerQuery.includes('garage')) {
+    suggestions.push('Properties with parking included');
+  }
+
+  return suggestions.slice(0, 5);
 };
 
 /**
@@ -247,7 +243,7 @@ export const getSearchSuggestions = async (query: string): Promise<string[]> => 
  */
 export const isSeeksphereAvailable = (): boolean => {
   try {
-    return !!SeeksphereClient && !!seeksphereConfig.apiKey;
+    return !!SeekSphereClient && !!seeksphereConfig.apiKey;
   } catch (error) {
     return false;
   }

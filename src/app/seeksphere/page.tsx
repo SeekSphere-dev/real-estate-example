@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, Clock, Target, Sparkles, TrendingUp } from 'lucide-react';
-import { PropertyCard } from '@/components/property';
+import { Search, Sparkles } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { SearchResults } from '@/components/search';
 import { Property, SearchFilters, SeeksphereSearchResult } from '@/lib/types';
 
 function SeeksphereSearchContent() {
@@ -147,10 +148,11 @@ function SeeksphereSearchContent() {
   }, [query, getSuggestions]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -169,7 +171,7 @@ function SeeksphereSearchContent() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container mx-auto px-4 py-6">
         {/* Search Interface */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
           <form onSubmit={handleSearch} className="space-y-6">
@@ -324,95 +326,26 @@ function SeeksphereSearchContent() {
           </form>
         </div>
 
-        {/* Search Results */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-            <div className="text-red-800">
-              <strong>Search Error:</strong> {error}
-            </div>
-          </div>
-        )}
-
-        {searchResult && (
-          <>
-            {/* Search Stats */}
-            <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-green-600" />
-                    <span className="text-sm text-gray-600">
-                      <strong>{searchResult.total.toLocaleString()}</strong> properties found
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-blue-600" />
-                    <span className="text-sm text-gray-600">
-                      Search completed in <strong>{searchResult.search_time_ms}ms</strong>
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-purple-600" />
-                  <span className="text-sm text-gray-600">
-                    Results ranked by <strong>relevance</strong>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Properties Grid */}
-            {searchResult.properties.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {searchResult.properties.map((property, index) => (
-                  <div key={property.id} className="relative">
-                    <PropertyCard property={property} />
-                    {/* Relevance Score Badge */}
-                    {searchResult.relevance_scores && searchResult.relevance_scores[index] && (
-                      <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                        {Math.round(searchResult.relevance_scores[index] * 100)}% match
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="text-gray-500 text-lg">No properties found matching your criteria</div>
-                <p className="text-gray-400 mt-2">Try adjusting your search terms or filters</p>
-              </div>
-            )}
-
-            {/* Pagination */}
-            {searchResult.total > limit && (
-              <div className="flex justify-center">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage <= 1}
-                    className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                  >
-                    Previous
-                  </button>
-                  
-                  <span className="px-4 py-2 text-sm text-gray-600">
-                    Page {currentPage} of {Math.ceil(searchResult.total / limit)}
-                  </span>
-                  
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage >= Math.ceil(searchResult.total / limit)}
-                    className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+        <SearchResults
+          searchResult={searchResult}
+          loading={loading}
+          error={error}
+          currentPage={currentPage}
+          itemsPerPage={limit}
+          onPageChange={handlePageChange}
+          onRetry={() => performSearch(filters, currentPage)}
+          onClearFilters={() => {
+            setQuery('');
+            const newFilters = { query: '' };
+            setFilters(newFilters);
+            updateURL(newFilters);
+            performSearch(newFilters);
+          }}
+          showRelevanceScores={true}
+        />
       </div>
     </div>
+    </ErrorBoundary>
   );
 }
 

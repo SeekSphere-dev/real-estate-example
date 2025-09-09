@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getPropertyById } from '@/lib/database';
 import { PropertyGallery } from '@/components/property/property-gallery';
-import { MapPin, Bed, Bath, Square, Car, Calendar, DollarSign, User, Phone, Mail, Building } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, Car, Calendar, DollarSign, User, Phone, Mail, Building, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { clsx } from 'clsx';
 import Link from 'next/link';
 
@@ -260,6 +260,110 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                 </div>
               </div>
             </div>
+
+            {/* Price/Status History */}
+            {property.history && property.history.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-2xl font-semibold text-gray-900 mb-6">Price & Status History</h2>
+                
+                <div className="space-y-4">
+                  {property.history.map((historyItem) => (
+                    <div key={historyItem.id} className="flex items-start gap-4 p-4 border border-gray-100 rounded-lg">
+                      <div className="flex-shrink-0 mt-1">
+                        {historyItem.event_type === 'price_change' && historyItem.price_change && (
+                          <div className={`p-2 rounded-full ${
+                            historyItem.price_change > 0 
+                              ? 'bg-red-100 text-red-600' 
+                              : 'bg-green-100 text-green-600'
+                          }`}>
+                            {historyItem.price_change > 0 ? (
+                              <TrendingUp className="w-4 h-4" />
+                            ) : (
+                              <TrendingDown className="w-4 h-4" />
+                            )}
+                          </div>
+                        )}
+                        {historyItem.event_type === 'status_change' && (
+                          <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                            <Activity className="w-4 h-4" />
+                          </div>
+                        )}
+                        {historyItem.event_type === 'listing' && (
+                          <div className="p-2 rounded-full bg-purple-100 text-purple-600">
+                            <Calendar className="w-4 h-4" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-sm font-medium text-gray-900 capitalize">
+                            {historyItem.event_type.replace('_', ' ')}
+                          </h3>
+                          <span className="text-sm text-gray-500">
+                            {historyItem.event_date.toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                        
+                        <div className="text-sm text-gray-600">
+                          {historyItem.event_type === 'price_change' && (
+                            <div className="space-y-1">
+                              {historyItem.old_value && (
+                                <div>Previous: ${parseFloat(historyItem.old_value).toLocaleString()}</div>
+                              )}
+                              {historyItem.new_value && (
+                                <div>New: ${parseFloat(historyItem.new_value).toLocaleString()}</div>
+                              )}
+                              {historyItem.price_change && (
+                                <div className={`font-medium ${
+                                  historyItem.price_change > 0 ? 'text-red-600' : 'text-green-600'
+                                }`}>
+                                  {historyItem.price_change > 0 ? '+' : ''}
+                                  ${Math.abs(historyItem.price_change).toLocaleString()} 
+                                  ({((historyItem.price_change / parseFloat(historyItem.old_value || '1')) * 100).toFixed(1)}%)
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {historyItem.event_type === 'status_change' && (
+                            <div className="space-y-1">
+                              {historyItem.old_value && (
+                                <div>Previous: {historyItem.old_value}</div>
+                              )}
+                              {historyItem.new_value && (
+                                <div>New: {historyItem.new_value}</div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {historyItem.event_type === 'listing' && (
+                            <div>Property was listed</div>
+                          )}
+                          
+                          {historyItem.notes && (
+                            <div className="mt-2 text-gray-500 italic">
+                              {historyItem.notes}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {property.history.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <Activity className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>No price or status history available</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}

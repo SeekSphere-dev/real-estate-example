@@ -199,6 +199,10 @@ export interface SeeksphereSearchResult extends SearchResult {
   relevance_scores?: number[];
   search_time_ms?: number;
   suggestions?: string[];
+  sql_query?: string; // The generated SQL query from seeksphere
+  seeksphere_response?: any; // Full response from seeksphere for debugging
+  error?: string; // Error message if seeksphere failed
+  fallback_used?: boolean; // Whether traditional search was used as fallback
 }
 
 // API response types

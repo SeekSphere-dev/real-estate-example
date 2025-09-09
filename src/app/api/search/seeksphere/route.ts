@@ -1,44 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchWithSeeksphere, isSeeksphereAvailable } from '@/lib/seeksphere';
-import { SearchFilters, validateSearchFilters } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { filters, page = 1, limit = 20 } = body;
+    const { query, page = 1, limit = 20 } = body;
 
-    // Validate search filters
-    const validation = validateSearchFilters(filters);
-    if (!validation.isValid) {
+    // Validate query
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
       return NextResponse.json(
         { 
-          error: 'Invalid search filters', 
-          details: validation.errors 
+          success: false,
+          error: 'Invalid query', 
+          message: 'Query must be a non-empty string'
         },
         { status: 400 }
       );
     }
 
-    // Check if seeksphere is available
-    if (!isSeeksphereAvailable()) {
+    // Validate pagination parameters
+    if (page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
         { 
-          error: 'Seeksphere service is not available',
-          message: 'Please check your seeksphere configuration'
+          success: false,
+          error: 'Invalid pagination parameters',
+          message: 'Page must be >= 1 and limit must be between 1 and 100'
         },
-        { status: 503 }
+        { status: 400 }
       );
     }
 
-    // Perform seeksphere search
-    const result = await searchWithSeeksphere(filters, page, limit);
+    // Perform seeksphere search (includes graceful degradation)
+    const result = await searchWithSeeksphere(query.trim(), page, limit);
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      success: true,
+      data: result
+    });
   } catch (error) {
     console.error('Seeksphere search error:', error);
     
     return NextResponse.json(
       { 
+        success: false,
         error: 'Search failed',
         message: error instanceof Error ? error.message : 'Unknown error occurred'
       },
@@ -50,57 +54,48 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   
-  // Convert URL search params to filters
-  const filters: SearchFilters = {
-    query: searchParams.get('q') || undefined,
-    property_type: searchParams.get('property_type') || undefined,
-    listing_type: searchParams.get('listing_type') || undefined,
-    min_price: searchParams.get('min_price') ? parseInt(searchParams.get('min_price')!) : undefined,
-    max_price: searchParams.get('max_price') ? parseInt(searchParams.get('max_price')!) : undefined,
-    bedrooms: searchParams.get('bedrooms') ? parseInt(searchParams.get('bedrooms')!) : undefined,
-    bathrooms: searchParams.get('bathrooms') ? parseInt(searchParams.get('bathrooms')!) : undefined,
-    city: searchParams.get('city') || undefined,
-    province: searchParams.get('province') || undefined,
-    min_sqft: searchParams.get('min_sqft') ? parseInt(searchParams.get('min_sqft')!) : undefined,
-    max_sqft: searchParams.get('max_sqft') ? parseInt(searchParams.get('max_sqft')!) : undefined,
-  };
-
+  const query = searchParams.get('q');
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
 
   try {
-    // Validate search filters
-    const validation = validateSearchFilters(filters);
-    if (!validation.isValid) {
+    // Validate query
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
       return NextResponse.json(
         { 
-          error: 'Invalid search filters', 
-          details: validation.errors 
+          success: false,
+          error: 'Invalid query', 
+          message: 'Query parameter "q" must be a non-empty string'
         },
         { status: 400 }
       );
     }
 
-    // Check if seeksphere is available
-    if (!isSeeksphereAvailable()) {
+    // Validate pagination parameters
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
         { 
-          error: 'Seeksphere service is not available',
-          message: 'Please check your seeksphere configuration'
+          success: false,
+          error: 'Invalid pagination parameters',
+          message: 'Page must be >= 1 and limit must be between 1 and 100'
         },
-        { status: 503 }
+        { status: 400 }
       );
     }
 
-    // Perform seeksphere search
-    const result = await searchWithSeeksphere(filters, page, limit);
+    // Perform seeksphere search (includes graceful degradation)
+    const result = await searchWithSeeksphere(query.trim(), page, limit);
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      success: true,
+      data: result
+    });
   } catch (error) {
     console.error('Seeksphere search error:', error);
     
     return NextResponse.json(
       { 
+        success: false,
         error: 'Search failed',
         message: error instanceof Error ? error.message : 'Unknown error occurred'
       },

@@ -18,7 +18,10 @@ const pool = new Pool(dbConfig);
 // Handle pool errors
 pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err);
-  process.exit(-1);
+  // Don't exit process in production, just log the error
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(-1);
+  }
 });
 
 /**
@@ -79,7 +82,7 @@ export const getClient = async (): Promise<PoolClient> => {
     return client;
   } catch (error) {
     console.error('Error connecting to database:', error);
-    throw error;
+    throw new Error(`Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 
@@ -93,7 +96,7 @@ export const query = async (text: string, params?: any[]) => {
     return result;
   } catch (error) {
     console.error('Database query error:', error);
-    throw error;
+    throw new Error(`Query execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   } finally {
     client.release();
   }
@@ -142,6 +145,7 @@ import type {
   PropertyImage,
   PropertyFeature
 } from './types';
+import { createPaginationParams } from './types';
 
 /**
  * Get a single property by ID with all related data
@@ -200,7 +204,14 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
       ORDER BY pf.category, pf.name
     `, [id]);
 
-    return mapRowToProperty(row, imagesResult.rows, featuresResult.rows);
+    // Get property history
+    const historyResult = await query(`
+      SELECT * FROM property_history 
+      WHERE property_id = $1 
+      ORDER BY event_date DESC
+    `, [id]);
+
+    return mapRowToProperty(row, imagesResult.rows, featuresResult.rows, historyResult.rows);
   } catch (error) {
     console.error('Error fetching property by ID:', error);
     throw new Error(`Failed to fetch property with ID ${id}`);
@@ -480,9 +491,26 @@ export const getPropertyFeatures = async () => {
 };
 
 /**
+ * Get property history for a specific property
+ */
+export const getPropertyHistory = async (propertyId: string) => {
+  try {
+    const result = await query(`
+      SELECT * FROM property_history 
+      WHERE property_id = $1 
+      ORDER BY event_date DESC
+    `, [propertyId]);
+    return result.rows;
+  } catch (error) {
+    console.error('Error fetching property history:', error);
+    throw new Error('Failed to fetch property history');
+  }
+};
+
+/**
  * Helper function to map database row to Property object
  */
-function mapRowToProperty(row: any, images: any[] = [], features: any[] = []): Property {
+function mapRowToProperty(row: any, images: any[] = [], features: any[] = [], history: any[] = []): Property {
   return {
     id: row.id,
     mls_number: row.mls_number,
@@ -622,6 +650,18 @@ function mapRowToProperty(row: any, images: any[] = [], features: any[] = []): P
       category: feature.category,
       description: feature.description,
       created_at: new Date(feature.created_at)
+    })),
+    
+    history: history.map(historyItem => ({
+      id: historyItem.id,
+      property_id: historyItem.property_id,
+      event_type: historyItem.event_type,
+      old_value: historyItem.old_value,
+      new_value: historyItem.new_value,
+      price_change: historyItem.price_change ? parseFloat(historyItem.price_change) : undefined,
+      status_change: historyItem.status_change,
+      event_date: new Date(historyItem.event_date),
+      notes: historyItem.notes
     }))
   };
 }

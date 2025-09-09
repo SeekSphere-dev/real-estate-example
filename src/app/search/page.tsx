@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { SearchFilters } from '@/components/search/search-filters';
-import { PropertyGrid } from '@/components/property/property-card';
+import { SearchFilters, SearchResults } from '@/components/search';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
@@ -19,7 +18,7 @@ import type {
   PropertyFeature
 } from '@/lib/types';
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 20;
 
 function SearchPageContent() {
   const router = useRouter();
@@ -242,10 +241,7 @@ function SearchPageContent() {
     searchProperties(urlFilters, currentPage);
   }, [searchParams, parseFiltersFromURL, searchProperties, currentPage]);
 
-  // Calculate pagination info
-  const totalPages = searchResult ? Math.ceil(searchResult.total / ITEMS_PER_PAGE) : 0;
-  const startItem = searchResult ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0;
-  const endItem = searchResult ? Math.min(currentPage * ITEMS_PER_PAGE, searchResult.total) : 0;
+
 
   return (
     <ErrorBoundary>
@@ -308,141 +304,17 @@ function SearchPageContent() {
 
             {/* Main Content */}
             <div className="flex-1">
-              {/* Results Header */}
-              {searchResult && (
-                <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-gray-600">
-                        Showing {startItem}-{endItem} of {searchResult.total.toLocaleString()} properties
-                      </p>
-                    </div>
-                    
-                    {/* Sort Options */}
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm text-gray-600">Sort by:</label>
-                      <select className="border border-gray-300 rounded px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="date_desc">Newest First</option>
-                        <option value="date_asc">Oldest First</option>
-                        <option value="price_asc">Price: Low to High</option>
-                        <option value="price_desc">Price: High to Low</option>
-                        <option value="size_desc">Size: Largest First</option>
-                        <option value="size_asc">Size: Smallest First</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Error State */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                  <p className="text-red-800">{error}</p>
-                  <button
-                    onClick={handleSearch}
-                    className="mt-2 text-red-600 hover:text-red-700 underline"
-                  >
-                    Try again
-                  </button>
-                </div>
-              )}
-
-              {/* Loading State */}
-              {loading && (
-                <div className="flex justify-center py-12">
-                  <LoadingSpinner size="lg" />
-                </div>
-              )}
-
-              {/* Property Grid */}
-              {!loading && searchResult && (
-                <PropertyGrid
-                  properties={searchResult.properties}
-                  loading={loading}
-                  className="mb-8"
-                />
-              )}
-
-              {/* Pagination */}
-              {!loading && searchResult && totalPages > 1 && (
-                <div className="bg-white rounded-lg shadow-sm p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
-                      Page {currentPage} of {totalPages}
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage <= 1}
-                        className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                        Previous
-                      </button>
-                      
-                      {/* Page Numbers */}
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                          let pageNum;
-                          if (totalPages <= 5) {
-                            pageNum = i + 1;
-                          } else if (currentPage <= 3) {
-                            pageNum = i + 1;
-                          } else if (currentPage >= totalPages - 2) {
-                            pageNum = totalPages - 4 + i;
-                          } else {
-                            pageNum = currentPage - 2 + i;
-                          }
-                          
-                          return (
-                            <button
-                              key={pageNum}
-                              onClick={() => handlePageChange(pageNum)}
-                              className={clsx(
-                                'w-10 h-10 rounded-lg transition-colors',
-                                pageNum === currentPage
-                                  ? 'bg-blue-600 text-white'
-                                  : 'border border-gray-300 hover:bg-gray-50'
-                              )}
-                            >
-                              {pageNum}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      
-                      <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage >= totalPages}
-                        className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        Next
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* No Results */}
-              {!loading && searchResult && searchResult.properties.length === 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                  <div className="text-gray-400 mb-4">
-                    <Filter className="w-16 h-16 mx-auto" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No properties found</h3>
-                  <p className="text-gray-500 mb-4">
-                    Try adjusting your search criteria or clearing some filters
-                  </p>
-                  <button
-                    onClick={() => handleFiltersChange({})}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Clear All Filters
-                  </button>
-                </div>
-              )}
+              <SearchResults
+                searchResult={searchResult}
+                loading={loading}
+                error={error}
+                currentPage={currentPage}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={handlePageChange}
+                onRetry={handleSearch}
+                onClearFilters={() => handleFiltersChange({})}
+                showRelevanceScores={false}
+              />
             </div>
           </div>
         </div>

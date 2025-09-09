@@ -10,6 +10,7 @@ interface PropertyCardProps {
   showFavorite?: boolean;
   onFavoriteToggle?: (propertyId: string) => void;
   isFavorited?: boolean;
+  relevanceScore?: number;
 }
 
 export function PropertyCard({ 
@@ -17,7 +18,8 @@ export function PropertyCard({
   className, 
   showFavorite = false,
   onFavoriteToggle,
-  isFavorited = false
+  isFavorited = false,
+  relevanceScore
 }: PropertyCardProps) {
   const [imageError, setImageError] = useState(false);
   
@@ -78,6 +80,13 @@ export function PropertyCard({
           {property.listing_type?.name && (
             <div className="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded text-xs font-medium capitalize">
               {property.listing_type.name}
+            </div>
+          )}
+          
+          {/* Relevance Score Badge */}
+          {relevanceScore && (
+            <div className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium">
+              {Math.round(relevanceScore * 100)}% match
             </div>
           )}
           
@@ -174,6 +183,7 @@ interface PropertyGridProps {
   showFavorites?: boolean;
   onFavoriteToggle?: (propertyId: string) => void;
   favoritedProperties?: Set<string>;
+  relevanceScores?: number[];
 }
 
 export function PropertyGrid({ 
@@ -182,7 +192,8 @@ export function PropertyGrid({
   className,
   showFavorites = false,
   onFavoriteToggle,
-  favoritedProperties = new Set()
+  favoritedProperties = new Set(),
+  relevanceScores
 }: PropertyGridProps) {
   if (loading) {
     return (
@@ -206,13 +217,14 @@ export function PropertyGrid({
 
   return (
     <div className={clsx('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6', className)}>
-      {properties.map((property) => (
+      {properties.map((property, index) => (
         <PropertyCard
           key={property.id}
           property={property}
           showFavorite={showFavorites}
           onFavoriteToggle={onFavoriteToggle}
           isFavorited={favoritedProperties.has(property.id)}
+          relevanceScore={relevanceScores?.[index]}
         />
       ))}
     </div>
