@@ -260,12 +260,19 @@ async function generateAgents() {
   ];
   
   const agents = [];
+  
   for (let i = 0; i < AGENTS_COUNT; i++) {
     const firstName = randomChoice(firstNames);
     const lastName = randomChoice(lastNames);
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${randomChoice(['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'])}`;
+    
+    // Generate unique email with index to ensure uniqueness
+    const domain = randomChoice(['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com']);
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${i + 1}@${domain}`;
+    
+    // Generate unique license number with index
+    const licenseNumber = `RE${String(100000 + i).padStart(6, '0')}`;
+    
     const phone = `${randomInt(200, 999)}-${randomInt(200, 999)}-${randomInt(1000, 9999)}`;
-    const licenseNumber = `RE${randomInt(100000, 999999)}`;
     const agencyName = randomChoice(agencies);
     const yearsExperience = randomInt(1, 30);
     const rating = randomFloat(3.0, 5.0);
@@ -281,7 +288,7 @@ async function generateAgents() {
   for (let i = 0; i < agents.length; i += BATCH_SIZE) {
     const batch = agents.slice(i, i + BATCH_SIZE);
     const values = batch.map((_, index) => {
-      const baseIndex = i * 9 + index * 9;
+      const baseIndex = index * 9;
       return `($${baseIndex + 1}, $${baseIndex + 2}, $${baseIndex + 3}, $${baseIndex + 4}, $${baseIndex + 5}, $${baseIndex + 6}, $${baseIndex + 7}, $${baseIndex + 8}, $${baseIndex + 9})`;
     }).join(', ');
     
