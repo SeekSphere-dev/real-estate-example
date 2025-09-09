@@ -1,3 +1,28 @@
+-- Enable UUID extension for generating UUIDs
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Create a fallback UUID function if the extension isn't available
+CREATE OR REPLACE FUNCTION generate_uuid_fallback()
+RETURNS UUID AS $$
+BEGIN
+    -- Try uuid_generate_v4() first
+    BEGIN
+        RETURN uuid_generate_v4();
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- Fallback to gen_random_uuid() (PostgreSQL 13+)
+            BEGIN
+                RETURN gen_random_uuid();
+            EXCEPTION
+                WHEN OTHERS THEN
+                    -- Final fallback using md5 hash
+                    RETURN (md5(random()::text || clock_timestamp()::text))::uuid;
+            END;
+    END;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 1. Provinces lookup table
 CREATE TABLE provinces (
     id SERIAL PRIMARY KEY,
     code VARCHAR(2) NOT NULL UNIQUE,
@@ -71,7 +96,7 @@ CREATE TABLE agents (
 
 -- 8. Main properties table
 CREATE TABLE properties (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT generate_uuid_fallback(),
     mls_number VARCHAR(50) UNIQUE,
     property_type_id INTEGER NOT NULL REFERENCES property_types(id),
     listing_type_id INTEGER NOT NULL REFERENCES listing_types(id),

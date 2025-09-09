@@ -50,8 +50,20 @@ async function recreateTables() {
   
   const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
   
-  // Execute schema SQL
-  await query(schemaSQL);
+  // Execute schema SQL (split by semicolon to handle multiple statements)
+  const statements = schemaSQL
+    .split(';')
+    .map(stmt => stmt.trim())
+    .filter(stmt => stmt.length > 0);
+  
+  for (const statement of statements) {
+    try {
+      await query(statement);
+    } catch (error) {
+      console.error(`Error executing statement: ${statement.substring(0, 100)}...`);
+      throw error;
+    }
+  }
   
   console.log('✅ Tables created successfully');
 }
