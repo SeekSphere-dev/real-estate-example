@@ -727,11 +727,60 @@ async function createIndexes() {
   console.log('Database indexes created');
 }
 
+/**
+ * Drop all existing tables and recreate them from schema
+ */
+async function recreateTables() {
+  console.log('🗑️  Dropping existing tables...');
+  
+  // Drop tables in reverse dependency order
+  const dropQueries = [
+    'DROP TABLE IF EXISTS property_history CASCADE',
+    'DROP TABLE IF EXISTS property_feature_mappings CASCADE',
+    'DROP TABLE IF EXISTS property_images CASCADE',
+    'DROP TABLE IF EXISTS properties CASCADE',
+    'DROP TABLE IF EXISTS agents CASCADE',
+    'DROP TABLE IF EXISTS property_features CASCADE',
+    'DROP TABLE IF EXISTS property_status CASCADE',
+    'DROP TABLE IF EXISTS listing_types CASCADE',
+    'DROP TABLE IF EXISTS property_types CASCADE',
+    'DROP TABLE IF EXISTS neighborhoods CASCADE',
+    'DROP TABLE IF EXISTS cities CASCADE',
+    'DROP TABLE IF EXISTS provinces CASCADE'
+  ];
+  
+  for (const dropQuery of dropQueries) {
+    try {
+      await query(dropQuery);
+    } catch (error) {
+      // Ignore errors for non-existent tables
+      console.log(`Note: ${dropQuery} - table may not exist`);
+    }
+  }
+  
+  console.log('✅ All tables dropped');
+  
+  // Recreate tables from schema
+  console.log('📊 Creating tables from schema...');
+  
+  const fs = await import('fs');
+  const path = await import('path');
+  
+  // Read schema.sql file
+  const schemaPath = path.join(process.cwd(), 'schema.sql');
+  const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
+  
+  // Execute schema SQL
+  await query(schemaSQL);
+  
+  console.log('✅ Tables created successfully');
+}
+
 // Main execution function
 async function main() {
   try {
-    console.log('Starting data generation script...');
-    console.log(`Target: ${TOTAL_PROPERTIES} properties, ${AGENTS_COUNT} agents`);
+    console.log('🚀 Starting data generation script...');
+    console.log(`🎯 Target: ${TOTAL_PROPERTIES} properties, ${AGENTS_COUNT} agents`);
     
     // Test database connection
     const connected = await testConnection();
@@ -739,22 +788,8 @@ async function main() {
       throw new Error('Could not connect to database');
     }
     
-    // Check if tables exist
-    const tablesExist = await checkTables();
-    if (!tablesExist) {
-      throw new Error('Required database tables do not exist. Please run the schema.sql file first.');
-    }
-    
-    // Check if data already exists
-    const existingProperties = await query('SELECT COUNT(*) as count FROM properties');
-    const existingCount = parseInt(existingProperties.rows[0].count);
-    
-    if (existingCount > 0) {
-      console.log(`Found ${existingCount} existing properties in database.`);
-      console.log('Do you want to continue and add more data? (This will not delete existing data)');
-      // In a real scenario, you might want to prompt the user here
-      // For now, we'll continue
-    }
+    // Recreate all tables (this will clear existing data)
+    await recreateTables();
     
     console.log('\n=== Phase 1: Inserting lookup data ===');
     await insertLookupData();

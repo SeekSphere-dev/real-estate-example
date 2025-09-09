@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "test:db": "npx tsx src/lib/test-database.ts",
     "test:connection": "npx tsx scripts/test-connection.ts",
+    "create-tables": "npx tsx scripts/create-tables.ts",
     "generate-data": "npx tsx scripts/generate-data.ts",
     "validate-data": "npx tsx scripts/validate-data.ts",
     "railway:deploy": "railway up",

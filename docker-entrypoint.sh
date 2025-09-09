@@ -32,25 +32,17 @@ if [ $attempt -gt $max_attempts ]; then
   exit 1
 fi
 
-# Check if database is initialized
-echo "🔍 Checking database initialization..."
-TABLE_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | tr -d ' ' || echo "0")
+# Always recreate database and generate fresh data
+echo "🎲 Generating fresh database with sample data (this may take a few minutes)..."
+echo "⚠️  This will clear any existing data and create fresh tables and data"
 
-if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
-  echo "📊 Initializing database schema..."
-  psql "$DATABASE_URL" -f schema.sql
-  echo "✅ Database schema created!"
-  
-  echo "🎲 Generating sample data (this may take a few minutes)..."
-  npm run generate-data
-  echo "✅ Sample data generated!"
-else
-  echo "✅ Database already initialized with $TABLE_COUNT tables"
-  
-  # Quick connection test
-  echo "🔍 Testing database connection..."
-  npm run test:connection
-fi
+# The generate-data script now handles table creation and data generation
+npm run generate-data
+echo "✅ Fresh database and sample data generated!"
+
+# Quick connection test
+echo "🔍 Testing database connection..."
+npm run test:connection
 
 echo "🌟 Starting Next.js application..."
 
