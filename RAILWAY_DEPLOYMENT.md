@@ -111,23 +111,69 @@ The application automatically handles database setup:
 
 ## Troubleshooting
 
+### Common Dockerfile Issues
+
+If the main Dockerfile fails, try the simplified version:
+
+```bash
+# Rename the files
+mv Dockerfile Dockerfile.original
+mv Dockerfile.simple Dockerfile
+
+# Deploy again
+railway up
+```
+
 ### Build Issues
 
-1. **Docker build fails**: Check the build logs in Railway dashboard
-2. **Dependencies issue**: Ensure `package.json` is up to date
-3. **TypeScript errors**: Run `npm run build` locally first
+1. **Docker build fails**: 
+   - Check build logs in Railway dashboard
+   - Try the simplified Dockerfile
+   - Ensure all dependencies are in `package.json`
+
+2. **Dependencies issue**: 
+   - Run `npm ci` locally to test
+   - Check for missing dependencies
+   - Verify Node.js version compatibility
+
+3. **TypeScript errors**: 
+   - Run `npm run build` locally first
+   - Check TypeScript configuration
+   - Ensure all types are properly installed
 
 ### Database Issues
 
-1. **Connection timeout**: Railway PostgreSQL may take a few minutes to initialize
-2. **Schema errors**: Check if `schema.sql` is properly formatted
-3. **Data generation fails**: Ensure sufficient memory allocation
+1. **Connection timeout**: 
+   - Railway PostgreSQL may take 2-3 minutes to initialize
+   - Check DATABASE_URL is properly set
+   - Verify PostgreSQL service is running
+
+2. **Schema errors**: 
+   - Check if `schema.sql` has syntax errors
+   - Test schema locally with PostgreSQL
+   - Ensure UUID extension is available
+
+3. **Data generation fails**: 
+   - Increase memory allocation in Railway
+   - Check for timeout issues
+   - Monitor logs during data generation
 
 ### Application Issues
 
-1. **App won't start**: Check environment variables are set correctly
-2. **API errors**: Verify `SEEKSPHERE_API_KEY` is valid
-3. **404 errors**: Ensure `NEXT_PUBLIC_APP_URL` matches your domain
+1. **App won't start**: 
+   - Check environment variables are set correctly
+   - Verify PORT is set to 3000
+   - Check startup script permissions
+
+2. **API errors**: 
+   - Verify `SEEKSPHERE_API_KEY` is valid
+   - Check API endpoint accessibility
+   - Monitor network connectivity
+
+3. **404 errors**: 
+   - Ensure `NEXT_PUBLIC_APP_URL` matches your domain
+   - Check Next.js routing configuration
+   - Verify build output
 
 ### Checking Logs
 
@@ -140,6 +186,28 @@ railway logs --follow
 
 # View specific service logs
 railway logs --service=your-service-name
+
+# Debug deployment issues
+./railway-debug.sh
+```
+
+### Quick Fix Commands
+
+```bash
+# Use simplified Dockerfile
+mv Dockerfile Dockerfile.original
+mv Dockerfile.simple Dockerfile
+railway up
+
+# Reset and redeploy
+railway down
+railway up
+
+# Check service status
+railway status
+
+# View environment variables
+railway variables
 ```
 
 ## Scaling and Performance

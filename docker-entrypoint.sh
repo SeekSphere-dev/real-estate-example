@@ -3,51 +3,60 @@ set -e
 
 echo "🚀 Starting SeekSphere Real Estate App..."
 
-# Parse DATABASE_URL if provided (Railway format)
-if [ -n "$DATABASE_URL" ]; then
-  echo "📝 Parsing DATABASE_URL for connection details..."
-  
-  # Extract components from DATABASE_URL
-  # Format: postgresql://user:password@host:port/database
-  DB_USER=$(echo $DATABASE_URL | sed -n 's/.*:\/\/\([^:]*\):.*/\1/p')
-  DB_PASSWORD=$(echo $DATABASE_URL | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p')
-  DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):.*/\1/p')
-  DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
-  DB_NAME=$(echo $DATABASE_URL | sed -n 's/.*\/\([^?]*\).*/\1/p')
-  
-  export DB_USER DB_PASSWORD DB_HOST DB_PORT DB_NAME
-  
-  echo "✅ Database connection details parsed from DATABASE_URL"
+# Ensure DATABASE_URL is available
+if [ -z "$DATABASE_URL" ]; then
+  echo "❌ DATABASE_URL environment variable is required"
+  exit 1
 fi
 
-# Wait for database to be ready
+echo "📝 Using DATABASE_URL for database connection"
+
+# Wait for database to be ready (simplified check)
 echo "⏳ Waiting for database connection..."
-until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME"; do
-  echo "Database is unavailable - sleeping"
+max_attempts=30
+attempt=1
+
+while [ $attempt -le $max_attempts ]; do
+  if psql "$DATABASE_URL" -c "SELECT 1;" > /dev/null 2>&1; then
+    echo "✅ Database is ready!"
+    break
+  fi
+  
+  echo "Database is unavailable - attempt $attempt/$max_attempts"
   sleep 2
+  attempt=$((attempt + 1))
 done
 
-echo "✅ Database is ready!"
+if [ $attempt -gt $max_attempts ]; then
+  echo "❌ Database connection failed after $max_attempts attempts"
+  exit 1
+fi
 
 # Check if database is initialized
 echo "🔍 Checking database initialization..."
-TABLE_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null || echo "0")
+TABLE_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | tr -d ' ' || echo "0")
 
-if [ "$TABLE_COUNT" -eq "0" ]; then
+if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
   echo "📊 Initializing database schema..."
   psql "$DATABASE_URL" -f schema.sql
   echo "✅ Database schema created!"
   
-  echo "🎲 Generating sample data..."
-  node scripts/generate-data.js
+  echo "🎲 Generating sample data (this may take a few minutes)..."
+  npm run generate-data
   echo "✅ Sample data generated!"
 else
   echo "✅ Database already initialized with $TABLE_COUNT tables"
   
-  # Test connection and validate data
+  # Quick connection test
   echo "🔍 Testing database connection..."
-  node scripts/test-connection.js
+  npm run test:connection
 fi
 
 echo "🌟 Starting Next.js application..."
-exec node server.js
+
+# Check if we're using standalone build
+if [ -f "server.js" ]; then
+  exec node server.js
+else
+  exec npm start
+fi
