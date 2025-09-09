@@ -13,7 +13,10 @@
     "test:db": "npx tsx src/lib/test-database.ts",
     "test:connection": "npx tsx scripts/test-connection.ts",
     "generate-data": "npx tsx scripts/generate-data.ts",
-    "validate-data": "npx tsx scripts/validate-data.ts"
+    "validate-data": "npx tsx scripts/validate-data.ts",
+    "railway:deploy": "railway up",
+    "railway:logs": "railway logs --follow",
+    "railway:connect": "railway connect"
   },
   "dependencies": {
     "@types/pg": "^8.15.5",
