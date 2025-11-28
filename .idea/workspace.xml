@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="03510352-56e1-4ab5-846c-4db2b06dcc07" name="Changes" comment="removed unneccessary stuff" />
+    <list default="true" id="03510352-56e1-4ab5-846c-4db2b06dcc07" name="Changes" comment="new generation script">
+      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -89,7 +93,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1764282939842</updated>
-      <workItem from="1764282940987" duration="8963000" />
+      <workItem from="1764282940987" duration="10391000" />
     </task>
     <task id="LOCAL-00001" summary="removed railway stuff">
       <option name="closed" value="true" />
@@ -115,7 +119,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764291581407</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="new generation script">
+      <option name="closed" value="true" />
+      <created>1764292237704</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1764292237704</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -129,6 +141,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="removed railway stuff" />
     <MESSAGE value="removed unneccessary stuff" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed unneccessary stuff" />
+    <MESSAGE value="new generation script" />
+    <option name="LAST_COMMIT_MESSAGE" value="new generation script" />
   </component>
 </project>
