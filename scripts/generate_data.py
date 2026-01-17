@@ -809,6 +809,8 @@ class DataGenerator:
 
 def main():
     """Main execution function."""
+    global TOTAL_PROPERTIES, AGENTS_COUNT
+    
     parser = argparse.ArgumentParser(description='Generate real estate data for Seeksphere demo')
     parser.add_argument('--database-url', required=True, help='PostgreSQL database URL')
     parser.add_argument('--force', action='store_true', help='Force regeneration even if data exists')
@@ -818,7 +820,6 @@ def main():
     args = parser.parse_args()
     
     # Update global configuration
-    global TOTAL_PROPERTIES, AGENTS_COUNT
     TOTAL_PROPERTIES = args.properties
     AGENTS_COUNT = args.agents
     
