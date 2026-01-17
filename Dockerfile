@@ -44,6 +44,13 @@ ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
+# Install Python, pip, and PostgreSQL client for data generation
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    postgresql-client \
+    && python3 -m ensurepip --upgrade
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
@@ -54,6 +61,17 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Copy scripts directory and schema for data generation
+COPY --chown=nextjs:nodejs ./scripts ./scripts
+COPY --chown=nextjs:nodejs ./schema.sql ./schema.sql
+
+# Install Python dependencies for data generation
+RUN pip3 install --no-cache-dir -r scripts/requirements.txt
+
+# Copy and make entrypoint script executable
+COPY --chown=nextjs:nodejs ./docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 USER nextjs
 
 EXPOSE 3000
@@ -63,4 +81,6 @@ ENV PORT=3000
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
 ENV HOSTNAME="0.0.0.0"
-CMD ["node", "server.js"]
+
+# Use entrypoint script for database initialization
+ENTRYPOINT ["./docker-entrypoint.sh"]

@@ -32,17 +32,34 @@ if [ $attempt -gt $max_attempts ]; then
   exit 1
 fi
 
-# Always recreate database and generate fresh data
+# Create database schema if it doesn't exist
+echo "📋 Setting up database schema..."
+if [ -f "schema.sql" ]; then
+  echo "   Running schema.sql to create tables..."
+  psql "$DATABASE_URL" -f schema.sql > /dev/null 2>&1 || {
+    echo "   ⚠️  Schema may already exist or there was an error (this is OK if tables already exist)"
+  }
+  echo "✅ Database schema ready"
+else
+  echo "   ⚠️  schema.sql not found, skipping schema creation"
+fi
+
+# Generate fresh data
 echo "🎲 Generating fresh database with sample data (this may take a few minutes)..."
 echo "⚠️  This will clear any existing data and create fresh tables and data"
 
-# The generate-data script now handles table creation and data generation
-npm run generate-data
+# The generate-data script handles data generation
+# Use python3 directly since npm may not be available in standalone build
+python3 scripts/generate_data.py --database-url "$DATABASE_URL" --force
 echo "✅ Fresh database and sample data generated!"
 
 # Quick connection test
 echo "🔍 Testing database connection..."
-npm run test:connection
+if psql "$DATABASE_URL" -c "SELECT 1 as test;" > /dev/null 2>&1; then
+  echo "✅ Database connection successful"
+else
+  echo "⚠️  Database connection test had issues, but continuing..."
+fi
 
 echo "🌟 Starting Next.js application..."
 

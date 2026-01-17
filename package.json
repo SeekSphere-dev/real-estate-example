@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "generate-data": "python3 scripts/generate_data.py --database-url \"$DATABASE_URL\" --force",
+    "test:connection": "node -e \"const { Pool } = require('pg'); const pool = new Pool({ connectionString: process.env.DATABASE_URL }); pool.query('SELECT 1 as test').then((res) => { console.log('✅ Database connection successful'); pool.end(); process.exit(0); }).catch((e) => { console.error('❌ Database connection failed:', e.message); pool.end(); process.exit(1); });\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
