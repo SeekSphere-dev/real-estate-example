@@ -183,6 +183,45 @@ class DataGenerator:
             print(f"❌ Error checking existing data: {e}")
             return False
     
+    def clear_all_data(self):
+        """Clear all data from tables without dropping them (faster alternative)."""
+        print("🗑️  Clearing all existing data from tables...")
+        
+        try:
+            # Clear data in reverse dependency order to handle foreign key constraints
+            tables = [
+                'property_history',
+                'property_images',
+                'property_feature_mappings',
+                'search_table',
+                'properties',
+                'agents',
+                'property_features',
+                'neighborhoods',
+                'cities',
+                'provinces',
+                'property_status',
+                'listing_types',
+                'property_types'
+            ]
+            
+            # Truncate tables with CASCADE to handle foreign key constraints
+            for table in tables:
+                try:
+                    cursor = self.db.execute_query(f"TRUNCATE TABLE {table} CASCADE")
+                    print(f"   ✓ Cleared table: {table}")
+                except Exception as e:
+                    # Table might not exist or might be empty, which is fine
+                    print(f"   ⚠️  Could not clear {table}: {e}")
+            
+            self.db.commit()
+            print("✅ All data cleared successfully")
+            
+        except Exception as e:
+            print(f"❌ Error clearing data: {e}")
+            self.db.rollback()
+            raise
+    
     def random_int(self, min_val: int, max_val: int) -> int:
         """Generate random integer between min and max (inclusive)."""
         return random.randint(min_val, max_val)
@@ -592,7 +631,7 @@ class DataGenerator:
                         listed_date, available_date, sold_date
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                     ) RETURNING id
                 """, (
                     mls_number, property_type_id, listing_type_id, status_id, agent_id,
@@ -846,6 +885,9 @@ def main():
         
         if args.force:
             print("\n🗑️  Force flag detected - will regenerate all data")
+            # Clear all data (faster than dropping/recreating tables)
+            # Tables should already exist from schema.sql run in docker-entrypoint.sh
+            generator.clear_all_data()
         
         print("\n=== Phase 1: Inserting lookup data ===")
         generator.insert_lookup_data()
