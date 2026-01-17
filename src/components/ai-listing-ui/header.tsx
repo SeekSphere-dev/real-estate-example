@@ -1,6 +1,5 @@
 "use client"
-
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Search, Menu, X, Heart, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,10 +8,23 @@ import Link from "next/link"
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [searchValue, setSearchValue] = useState("")
+    const fetchData = async () => {
+        try {
+          const response = await fetch(`/api/search?q=${encodeURIComponent(searchValue)}`)
+          if (!response.ok) {
+            throw new Error('Search failed')
+          }
+          const data = await response.json()
+          console.log(data)
+          // Handle the data here (e.g., update state, navigate, etc.)
+        } catch (error) {
+          console.error('Error fetching data:', error)
+        }
+      }
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        const newFilters = { searchText: searchValue }
+        fetchData();
     }
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,6 +106,9 @@ export function Header() {
                             placeholder="Search property titles..."
                             value={searchValue}
                             onChange={handleSearchChange}
+                            onSubmit={(e) => {
+                                fetchData();
+                            }}
                             className="pl-10 pr-4 h-10 bg-secondary border-0"
                         />
                     </form>

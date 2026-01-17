@@ -4,8 +4,8 @@ import { sql } from 'drizzle-orm'
 
 // Initialize the client
 const client = new SeekSphereClient({
-    apiKey: 'your-org-id', // Your organization ID from SeekSphere dashboard
-    timeout: 30000 // optional, defaults to 30 seconds
+    apiKey: 'org_38P3GCeN8XMMIrsc187bKx2WdeH',
+    timeout: 30000
 });
 
 const callSeeksphere = async (query: string) => {
