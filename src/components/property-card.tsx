@@ -25,6 +25,25 @@ export function PropertyCard({ property, viewMode }: PropertyCardProps) {
         return `$${(num / 1000).toFixed(0)}K`
     }
 
+    const formatNumber = (num: number) => {
+        // Use consistent formatting that doesn't depend on locale
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    }
+
+    const formatDate = (dateString: string) => {
+        // Use consistent date formatting that doesn't depend on locale
+        try {
+            const date = new Date(dateString)
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            const month = months[date.getMonth()]
+            const day = date.getDate()
+            const year = date.getFullYear()
+            return `${month} ${day}, ${year}`
+        } catch {
+            return dateString
+        }
+    }
+
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case "active":
@@ -99,14 +118,14 @@ export function PropertyCard({ property, viewMode }: PropertyCardProps) {
                             </div>
                             <div className="flex items-center gap-1.5 text-foreground">
                                 <Square className="h-4 w-4 text-muted-foreground" />
-                                <span>{property.totalAreaSqft.toLocaleString()} sqft</span>
+                                <span>{formatNumber(property.totalAreaSqft)} sqft</span>
                             </div>
                         </div>
 
                         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <Calendar className="h-3.5 w-3.5" />
-                                Listed {new Date(property.listedDate).toLocaleDateString()}
+                                Listed {formatDate(property.listedDate)}
                             </div>
                             <Button 
                                 size="sm" 
@@ -185,7 +204,7 @@ export function PropertyCard({ property, viewMode }: PropertyCardProps) {
                     </div>
                     <div className="flex items-center gap-1.5 text-foreground">
                         <Square className="h-4 w-4 text-muted-foreground" />
-                        <span>{property.totalAreaSqft.toLocaleString()}</span>
+                        <span>{formatNumber(property.totalAreaSqft)}</span>
                     </div>
                 </div>
 

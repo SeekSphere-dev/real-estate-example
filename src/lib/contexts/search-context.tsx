@@ -7,7 +7,7 @@ interface SearchContextType {
   filters: PropertyFilters
   updateFilters: (newFilters: Partial<PropertyFilters>) => void
   resetFilters: () => void
-  executeSearch: () => Promise<void>
+  executeSearch: (filters?: PropertyFilters) => Promise<void>
   isLoading: boolean
   properties: any[]
   totalCount: number
@@ -79,7 +79,7 @@ export function SearchProvider({ children }: SearchProviderProps) {
   const executeSearch = useCallback(async (searchFilters?: PropertyFilters) => {
     setIsLoading(true)
     const filtersToUse = searchFilters || filters
-    
+
     try {
       const response = await fetch('/api/properties/filter', {
         method: 'POST',

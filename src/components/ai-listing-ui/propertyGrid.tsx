@@ -1,21 +1,37 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Grid3X3, List, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PropertyCard } from "@/components/property-card"
-import { useSearch } from "@/lib/contexts/search-context"
+import type { Property } from "@/lib/property-data";
 
-export function PropertyGrid() {
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-    const { properties, totalCount, isLoading, executeSearch, pagination, updateFilters, filters } = useSearch()
+interface Pagination {
+    page: number
+    hasNextPage: boolean
+}
 
-    useEffect(() => {
-        // Load initial properties when component mounts
-        executeSearch()
-    }, [])
+interface PropertyGridUIProps {
+    viewMode: "grid" | "list"
+    onViewModeChange: (mode: "grid" | "list") => void
+    properties: Property[]
+    totalCount: number
+    isLoading: boolean
+    pagination: Pagination
+    onLoadMore: () => void
+    onSortChange?: (value: string) => void
+}
 
+export function PropertyGrid({
+                                   viewMode,
+                                   onViewModeChange,
+                                   properties,
+                                   totalCount,
+                                   isLoading,
+                                   pagination,
+                                   onLoadMore,
+                                   onSortChange
+                               }: PropertyGridUIProps) {
     return (
         <div>
             {/* Results Header */}
@@ -26,7 +42,7 @@ export function PropertyGrid() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Select defaultValue="newest">
+                    <Select defaultValue="newest" onValueChange={onSortChange}>
                         <SelectTrigger className="w-[160px] bg-card border-border">
                             <SelectValue placeholder="Sort by" />
                         </SelectTrigger>
@@ -43,7 +59,7 @@ export function PropertyGrid() {
                             variant="ghost"
                             size="icon"
                             className={viewMode === "grid" ? "bg-card shadow-sm" : ""}
-                            onClick={() => setViewMode("grid")}
+                            onClick={() => onViewModeChange("grid")}
                         >
                             <Grid3X3 className="h-4 w-4" />
                         </Button>
@@ -51,7 +67,7 @@ export function PropertyGrid() {
                             variant="ghost"
                             size="icon"
                             className={viewMode === "list" ? "bg-card shadow-sm" : ""}
-                            onClick={() => setViewMode("list")}
+                            onClick={() => onViewModeChange("list")}
                         >
                             <List className="h-4 w-4" />
                         </Button>
@@ -91,11 +107,7 @@ export function PropertyGrid() {
                         variant="outline"
                         size="lg"
                         className="px-8 bg-transparent"
-                        onClick={() => {
-                            const newFilters = { page: pagination.page + 1 }
-                            updateFilters(newFilters)
-                            executeSearch({ ...filters, ...newFilters })
-                        }}
+                        onClick={onLoadMore}
                         disabled={isLoading}
                     >
                         {isLoading ? 'Loading...' : 'Load More Properties'}

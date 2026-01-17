@@ -4,10 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="03510352-56e1-4ab5-846c-4db2b06dcc07" name="Changes" comment="new generation script">
-      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+    <list default="true" id="03510352-56e1-4ab5-846c-4db2b06dcc07" name="Changes" comment="updated Dockerfile">
+      <change afterPath="$PROJECT_DIR$/public/seeksphere-White.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/ai-search/layout.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/ai-search/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ai-listing-ui/header.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ai-listing-ui/propertyGrid.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/seeksphere/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/traditional/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/traditional/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/traditional/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/traditional/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/property-grid.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/property-grid.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/contexts/search-context.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/contexts/search-context.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,23 +51,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
-    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/iresharma/Documents/seeksphere-real-estate-demo/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "js.debugger.nextJs.config.created.client": "true",
+    "js.debugger.nextJs.config.created.server": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "ts.external.directory.path": "/Users/iresharma/Documents/seeksphere-real-estate-demo/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/public" />
@@ -93,7 +104,14 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1764282939842</updated>
-      <workItem from="1764282940987" duration="10391000" />
+      <workItem from="1764282940987" duration="10483000" />
+      <workItem from="1764294357695" duration="15000" />
+      <workItem from="1764695172722" duration="613000" />
+      <workItem from="1765717537578" duration="24000" />
+      <workItem from="1765720578218" duration="2566000" />
+      <workItem from="1765727550819" duration="6198000" />
+      <workItem from="1767276197449" duration="50000" />
+      <workItem from="1768672977671" duration="2423000" />
     </task>
     <task id="LOCAL-00001" summary="removed railway stuff">
       <option name="closed" value="true" />
@@ -127,7 +145,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764292237704</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="updated Dockerfile">
+      <option name="closed" value="true" />
+      <created>1764293649908</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1764293649908</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -142,6 +168,7 @@
     <MESSAGE value="removed railway stuff" />
     <MESSAGE value="removed unneccessary stuff" />
     <MESSAGE value="new generation script" />
-    <option name="LAST_COMMIT_MESSAGE" value="new generation script" />
+    <MESSAGE value="updated Dockerfile" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated Dockerfile" />
   </component>
 </project>

@@ -1,16 +1,12 @@
 import type React from "react"
-import type { Metadata } from "next"
-import { Inter, Playfair_Display } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
+import type {Metadata} from "next"
+import {SearchProvider} from "@/lib/contexts/search-context"
 import "./traditional.css"
 
-const _inter = Inter({ subsets: ["latin"] })
-const _playfair = Playfair_Display({ subsets: ["latin"] })
-
 export const metadata: Metadata = {
-    title: "Prestige Properties | Find Your Dream Home",
+    title: "SeekeSphere Search Demo | Traditional Filter Search",
     description:
-        "Discover luxury real estate listings with Prestige Properties. Browse houses, condos, and apartments for sale and rent.",
+        "A demonstration of how filter based traditional search works",
 }
 
 export default function RootLayout({
@@ -19,8 +15,10 @@ export default function RootLayout({
     children: React.ReactNode
 }>) {
     return (
-        <div className={`font-sans antialiased`}>
-            {children}
-        </div>
+        <SearchProvider>
+            <div className={`font-sans antialiased`}>
+                {children}
+            </div>
+        </SearchProvider>
     )
 }
