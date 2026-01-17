@@ -1,3 +1,22 @@
+-- Enable UUID extension if not already enabled
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Drop all tables if they exist (in reverse dependency order)
+DROP TABLE IF EXISTS property_history CASCADE;
+DROP TABLE IF EXISTS property_images CASCADE;
+DROP TABLE IF EXISTS property_feature_mappings CASCADE;
+DROP TABLE IF EXISTS search_table CASCADE;
+DROP TABLE IF EXISTS properties CASCADE;
+DROP TABLE IF EXISTS agents CASCADE;
+DROP TABLE IF EXISTS property_features CASCADE;
+DROP TABLE IF EXISTS neighborhoods CASCADE;
+DROP TABLE IF EXISTS cities CASCADE;
+DROP TABLE IF EXISTS provinces CASCADE;
+DROP TABLE IF EXISTS property_status CASCADE;
+DROP TABLE IF EXISTS listing_types CASCADE;
+DROP TABLE IF EXISTS property_types CASCADE;
+
+-- 1. Provinces lookup table
 CREATE TABLE provinces (
     id SERIAL PRIMARY KEY,
     code VARCHAR(2) NOT NULL UNIQUE,
