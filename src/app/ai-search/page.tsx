@@ -15,6 +15,9 @@ import {
 import { eq, and, desc, count } from "drizzle-orm";
 import type { Property } from "@/lib/property-data";
 
+// Force dynamic rendering - don't prerender at build time
+export const dynamic = 'force-dynamic';
+
 async function fetchProperties(page: number = 1, limit: number = 10) {
   const skip = (page - 1) * limit;
 

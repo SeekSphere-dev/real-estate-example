@@ -45,11 +45,14 @@ ENV NODE_ENV=production
 # ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install Python, pip, and PostgreSQL client for data generation
-RUN apk add --no-cache \
+# Must be done as root before switching users
+RUN apk update && apk add --no-cache \
     python3 \
     py3-pip \
     postgresql-client \
-    && python3 -m ensurepip --upgrade
+    && ln -sf python3 /usr/bin/python \
+    && python3 --version \
+    && pip3 --version
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -61,16 +64,20 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy scripts directory and schema for data generation
-COPY --chown=nextjs:nodejs ./scripts ./scripts
-COPY --chown=nextjs:nodejs ./schema.sql ./schema.sql
+# Copy scripts directory and schema for data generation (as root first)
+COPY ./scripts ./scripts
+COPY ./schema.sql ./schema.sql
 
-# Install Python dependencies for data generation
-RUN pip3 install --no-cache-dir -r scripts/requirements.txt
+# Install Python dependencies for data generation (as root)
+# Use --break-system-packages flag to allow system-wide installation in Docker
+RUN pip3 install --break-system-packages --no-cache-dir -r scripts/requirements.txt
+
+# Change ownership of scripts and schema to nextjs user
+RUN chown -R nextjs:nodejs ./scripts ./schema.sql
 
 # Copy and make entrypoint script executable
-COPY --chown=nextjs:nodejs ./docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh && chown nextjs:nodejs ./docker-entrypoint.sh
 
 USER nextjs
 
