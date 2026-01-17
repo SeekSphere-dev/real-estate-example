@@ -1,0 +1,317 @@
+{
+    "id": {
+      "type": "uuid",
+      "description": "Primary key for property identification",
+      "exists": "properties.id"
+    },
+    "mls_number": {
+      "type": "varchar",
+      "description": "MLS number for property identification",
+      "exists": "properties.mls_number"
+    },
+    "street_address": {
+      "type": "varchar",
+      "description": "Street address of the property",
+      "exists": "properties.street_address"
+    },
+    "unit_number": {
+      "type": "varchar",
+      "description": "Unit number if applicable",
+      "exists": "properties.unit_number"
+    },
+    "title": {
+      "type": "varchar",
+      "description": "Property title for search",
+      "exists": "properties.title"
+    },
+    "description": {
+      "type": "text",
+      "description": "Property description for detailed search",
+      "exists": "properties.description"
+    },
+    "year_built": {
+      "type": "integer",
+      "description": "Year the property was built",
+      "exists": "properties.year_built"
+    },
+    "total_area_sqft": {
+      "type": "integer",
+      "description": "Total area in square feet",
+      "exists": "properties.total_area_sqft"
+    },
+    "lot_size_sqft": {
+      "type": "integer",
+      "description": "Lot size in square feet",
+      "exists": "properties.lot_size_sqft"
+    },
+    "bedrooms": {
+      "type": "integer",
+      "description": "Number of bedrooms",
+      "exists": "properties.bedrooms"
+    },
+    "bathrooms": {
+      "type": "decimal",
+      "description": "Number of bathrooms",
+      "exists": "properties.bathrooms"
+    },
+    "half_bathrooms": {
+      "type": "integer",
+      "description": "Number of half bathrooms",
+      "exists": "properties.half_bathrooms"
+    },
+    "floors": {
+      "type": "integer",
+      "description": "Number of floors",
+      "exists": "properties.floors"
+    },
+    "list_price": {
+      "type": "decimal",
+      "description": "Listing price for range queries",
+      "exists": "properties.list_price"
+    },
+    "price_per_sqft": {
+      "type": "decimal",
+      "description": "Price per square foot",
+      "exists": "properties.price_per_sqft"
+    },
+    "monthly_rent": {
+      "type": "decimal",
+      "description": "Monthly rent amount",
+      "exists": "properties.monthly_rent"
+    },
+    "maintenance_fee": {
+      "type": "decimal",
+      "description": "Monthly maintenance fee",
+      "exists": "properties.maintenance_fee"
+    },
+    "property_taxes_annual": {
+      "type": "decimal",
+      "description": "Annual property taxes",
+      "exists": "properties.property_taxes_annual"
+    },
+    "heating_type": {
+      "type": "varchar",
+      "description": "Type of heating system",
+      "exists": "properties.heating_type"
+    },
+    "cooling_type": {
+      "type": "varchar",
+      "description": "Type of cooling system",
+      "exists": "properties.cooling_type"
+    },
+    "utilities_included": {
+      "type": "text[]",
+      "description": "Array of included utilities",
+      "exists": "properties.utilities_included"
+    },
+    "parking_spaces": {
+      "type": "integer",
+      "description": "Number of parking spaces",
+      "exists": "properties.parking_spaces"
+    },
+    "parking_type": {
+      "type": "varchar",
+      "description": "Type of parking",
+      "exists": "properties.parking_type"
+    },
+    "pet_friendly": {
+      "type": "boolean",
+      "description": "Whether the property is pet friendly",
+      "exists": "properties.pet_friendly"
+    },
+    "furnished": {
+      "type": "boolean",
+      "description": "Whether the property is furnished",
+      "exists": "properties.furnished"
+    },
+    "listed_date": {
+      "type": "date",
+      "description": "Date the property was listed",
+      "exists": "properties.listed_date"
+    },
+    "available_date": {
+      "type": "date",
+      "description": "Date the property is available",
+      "exists": "properties.available_date"
+    },
+    "sold_date": {
+      "type": "date",
+      "description": "Date the property was sold",
+      "exists": "properties.sold_date"
+    },
+    "last_updated": {
+      "type": "timestamp",
+      "description": "Last updated timestamp",
+      "exists": "properties.last_updated"
+    },
+    "created_at": {
+      "type": "timestamp",
+      "description": "Creation timestamp",
+      "exists": "properties.created_at"
+    },
+    "latitude": {
+      "type": "decimal",
+      "description": "Latitude coordinate",
+      "exists": "properties.latitude"
+    },
+    "longitude": {
+      "type": "decimal",
+      "description": "Longitude coordinate",
+      "exists": "properties.longitude"
+    },
+    "province_code": {
+      "type": "varchar",
+      "description": "Province code",
+      "exists": "provinces.code"
+    },
+    "province_name": {
+      "type": "varchar",
+      "description": "Province name",
+      "exists": "provinces.name"
+    },
+    "province_country_code": {
+      "type": "varchar",
+      "description": "Country code for province",
+      "exists": "provinces.country_code"
+    },
+    "city_name": {
+      "type": "varchar",
+      "description": "City name",
+      "exists": "cities.name"
+    },
+    "city_population": {
+      "type": "integer",
+      "description": "City population",
+      "exists": "cities.population"
+    },
+    "city_latitude": {
+      "type": "decimal",
+      "description": "City latitude",
+      "exists": "cities.latitude"
+    },
+    "city_longitude": {
+      "type": "decimal",
+      "description": "City longitude",
+      "exists": "cities.longitude"
+    },
+    "neighborhood_name": {
+      "type": "varchar",
+      "description": "Neighborhood name",
+      "exists": "neighborhoods.name"
+    },
+    "neighborhood_average_income": {
+      "type": "integer",
+      "description": "Average income in neighborhood",
+      "exists": "neighborhoods.average_income"
+    },
+    "neighborhood_walkability_score": {
+      "type": "integer",
+      "description": "Walkability score of neighborhood",
+      "exists": "neighborhoods.walkability_score"
+    },
+    "neighborhood_safety_rating": {
+      "type": "integer",
+      "description": "Safety rating of neighborhood",
+      "exists": "neighborhoods.safety_rating"
+    },
+    "property_type_name": {
+      "type": "varchar",
+      "description": "Property type name",
+      "exists": "property_types.name"
+    },
+    "property_type_description": {
+      "type": "text",
+      "description": "Property type description",
+      "exists": "property_types.description"
+    },
+    "property_type_category": {
+      "type": "varchar",
+      "description": "Property type category (residential, commercial, industrial)",
+      "exists": "property_types.category"
+    },
+    "listing_type_name": {
+      "type": "varchar",
+      "description": "Listing type name",
+      "exists": "listing_types.name"
+    },
+    "listing_type_description": {
+      "type": "text",
+      "description": "Listing type description",
+      "exists": "listing_types.description"
+    },
+    "property_status_name": {
+      "type": "varchar",
+      "description": "Property status name",
+      "exists": "property_status.name"
+    },
+    "property_status_description": {
+      "type": "text",
+      "description": "Property status description",
+      "exists": "property_status.description"
+    },
+    "property_status_is_available": {
+      "type": "boolean",
+      "description": "Whether the property is available",
+      "exists": "property_status.is_available"
+    },
+    "agent_first_name": {
+      "type": "varchar",
+      "description": "Agent's first name",
+      "exists": "agents.first_name"
+    },
+    "agent_last_name": {
+      "type": "varchar",
+      "description": "Agent's last name",
+      "exists": "agents.last_name"
+    },
+    "agent_email": {
+      "type": "varchar",
+      "description": "Agent's email",
+      "exists": "agents.email"
+    },
+    "agent_phone": {
+      "type": "varchar",
+      "description": "Agent's phone number",
+      "exists": "agents.phone"
+    },
+    "agent_license_number": {
+      "type": "varchar",
+      "description": "Agent's license number",
+      "exists": "agents.license_number"
+    },
+    "agent_agency_name": {
+      "type": "varchar",
+      "description": "Agent's agency name",
+      "exists": "agents.agency_name"
+    },
+    "agent_years_experience": {
+      "type": "integer",
+      "description": "Agent's years of experience",
+      "exists": "agents.years_experience"
+    },
+    "agent_rating": {
+      "type": "decimal",
+      "description": "Agent's rating",
+      "exists": "agents.rating"
+    },
+    "agent_total_reviews": {
+      "type": "integer",
+      "description": "Agent's total reviews",
+      "exists": "agents.total_reviews"
+    },
+    "property_features_names": {
+      "type": "varchar",
+      "description": "Names of property features (aggregated from mappings)",
+      "exists": "property_features.name"
+    },
+    "property_features_categories": {
+      "type": "varchar",
+      "description": "Categories of property features",
+      "exists": "property_features.category"
+    },
+    "property_features_descriptions": {
+      "type": "text",
+      "description": "Descriptions of property features",
+      "exists": "property_features.description"
+    }
+  }
