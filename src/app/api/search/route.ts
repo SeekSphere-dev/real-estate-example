@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { search } from '@/lib/seeksphere'
 
+// Allow this route to run for up to 60 seconds (max for Vercel Pro plan)
+// For self-hosted deployments, this can be increased further
+export const maxDuration = 60
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const query = searchParams.get('q')

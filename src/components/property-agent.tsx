@@ -19,10 +19,20 @@ interface Agent {
 }
 
 interface PropertyAgentProps {
-    agent: Agent
+    agent: Agent | null
 }
 
 export function PropertyAgent({ agent }: PropertyAgentProps) {
+    // Handle null agent
+    if (!agent || !agent.firstName) {
+        return (
+            <div className="bg-card rounded-xl border border-border p-6">
+                <h2 className="font-semibold text-lg text-foreground mb-4">Listed By</h2>
+                <p className="text-muted-foreground text-sm">Agent information not available</p>
+            </div>
+        )
+    }
+
     return (
         <div className="bg-card rounded-xl border border-border p-6">
             <h2 className="font-semibold text-lg text-foreground mb-4">Listed By</h2>

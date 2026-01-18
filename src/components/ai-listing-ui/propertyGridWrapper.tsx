@@ -12,6 +12,7 @@ interface PropertyGridWrapperProps {
     isSearchResult?: boolean
     isLoading?: boolean
     searchQuery?: string | null
+    searchElapsedTime?: number
 }
 
 export function PropertyGridWrapper({
@@ -21,7 +22,8 @@ export function PropertyGridWrapper({
     initialHasNextPage,
     isSearchResult = false,
     isLoading: externalLoading = false,
-    searchQuery
+    searchQuery,
+    searchElapsedTime = 0
 }: PropertyGridWrapperProps) {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
     const [properties, setProperties] = useState<Property[]>(propProperties)
@@ -97,6 +99,7 @@ export function PropertyGridWrapper({
                 properties={properties}
                 totalCount={totalCount}
                 isLoading={isLoading || externalLoading}
+                loadingElapsedTime={externalLoading ? searchElapsedTime : 0}
                 pagination={{
                     page: currentPage,
                     hasNextPage: isSearchResult ? false : hasNextPage

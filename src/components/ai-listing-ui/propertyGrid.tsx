@@ -17,9 +17,24 @@ interface PropertyGridUIProps {
     properties: Property[]
     totalCount: number
     isLoading: boolean
+    loadingElapsedTime?: number
     pagination: Pagination
     onLoadMore: () => void
     onSortChange?: (value: string) => void
+}
+
+const getLoadingMessage = (elapsedSeconds: number): string => {
+    if (elapsedSeconds < 5) {
+        return "Searching properties..."
+    } else if (elapsedSeconds < 10) {
+        return "AI is doing its magic..."
+    } else if (elapsedSeconds < 15) {
+        return "Finding the perfect matches..."
+    } else if (elapsedSeconds < 20) {
+        return "Almost there, hang tight..."
+    } else {
+        return "This is taking a while, but we're on it..."
+    }
 }
 
 export function PropertyGrid({
@@ -28,6 +43,7 @@ export function PropertyGrid({
                                    properties,
                                    totalCount,
                                    isLoading,
+                                   loadingElapsedTime = 0,
                                    pagination,
                                    onLoadMore,
                                    onSortChange
@@ -85,9 +101,24 @@ export function PropertyGrid({
                 className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-4"}
             >
                 {isLoading && (
-                    <div className="col-span-full text-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
-                        <p className="mt-2 text-muted-foreground">Loading properties...</p>
+                    <div className="col-span-full text-center py-12">
+                        <div className="relative mx-auto w-16 h-16">
+                            <div className="absolute inset-0 rounded-full border-4 border-muted"></div>
+                            <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin"></div>
+                            {loadingElapsedTime >= 5 && (
+                                <div className="absolute inset-2 rounded-full bg-primary/10 animate-pulse flex items-center justify-center">
+                                    <span className="text-lg">✨</span>
+                                </div>
+                            )}
+                        </div>
+                        <p className="mt-4 text-muted-foreground font-medium transition-all duration-300">
+                            {getLoadingMessage(loadingElapsedTime)}
+                        </p>
+                        {loadingElapsedTime >= 5 && (
+                            <p className="mt-1 text-xs text-muted-foreground/70">
+                                {loadingElapsedTime}s elapsed
+                            </p>
+                        )}
                     </div>
                 )}
                 {!isLoading && properties.length === 0 && (

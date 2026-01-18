@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { Header } from "./header"
 import { PropertyGridWrapper } from "./propertyGridWrapper"
 import type { Property } from "@/lib/property-data"
@@ -22,6 +22,36 @@ export function AiSearchWrapper({
     const [totalCount, setTotalCount] = useState(initialTotalCount)
     const [isSearching, setIsSearching] = useState(false)
     const [searchQuery, setSearchQuery] = useState<string | null>(null)
+    const [searchElapsedTime, setSearchElapsedTime] = useState(0)
+    const searchStartTimeRef = useRef<number | null>(null)
+    const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+    // Track elapsed time during search
+    useEffect(() => {
+        if (isSearching) {
+            searchStartTimeRef.current = Date.now()
+            setSearchElapsedTime(0)
+
+            timerRef.current = setInterval(() => {
+                if (searchStartTimeRef.current) {
+                    setSearchElapsedTime(Math.floor((Date.now() - searchStartTimeRef.current) / 1000))
+                }
+            }, 1000)
+        } else {
+            if (timerRef.current) {
+                clearInterval(timerRef.current)
+                timerRef.current = null
+            }
+            searchStartTimeRef.current = null
+            setSearchElapsedTime(0)
+        }
+
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current)
+            }
+        }
+    }, [isSearching])
 
     const handleSearch = useCallback(async (query: string) => {
         setIsSearching(true)
@@ -60,6 +90,7 @@ export function AiSearchWrapper({
                 isSearchResult={!!searchQuery}
                 isLoading={isSearching}
                 searchQuery={searchQuery}
+                searchElapsedTime={searchElapsedTime}
             />
         </div>
     )
