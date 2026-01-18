@@ -101,7 +101,7 @@ export function PropertyGridWrapper({
                     page: currentPage,
                     hasNextPage: isSearchResult ? false : hasNextPage
                 }}
-                onLoadMore={isSearchResult ? undefined : handleLoadMore}
+                onLoadMore={isSearchResult ? () => {} : handleLoadMore}
                 onSortChange={handleSortChange}
             />
         </main >
