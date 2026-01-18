@@ -1,28 +1,44 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { PropertyGrid } from "./propertyGrid"
 import type { Property } from "@/lib/property-data"
 
 interface PropertyGridWrapperProps {
-    initialProperties: Property[]
-    initialTotalCount: number
+    properties: Property[]
+    totalCount: number
     initialPage: number
     initialHasNextPage: boolean
+    isSearchResult?: boolean
+    isLoading?: boolean
+    searchQuery?: string | null
 }
 
 export function PropertyGridWrapper({
-    initialProperties,
-    initialTotalCount,
+    properties: propProperties,
+    totalCount: propTotalCount,
     initialPage,
-    initialHasNextPage
+    initialHasNextPage,
+    isSearchResult = false,
+    isLoading: externalLoading = false,
+    searchQuery
 }: PropertyGridWrapperProps) {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-    const [properties, setProperties] = useState<Property[]>(initialProperties)
-    const [totalCount, setTotalCount] = useState(initialTotalCount)
+    const [properties, setProperties] = useState<Property[]>(propProperties)
+    const [totalCount, setTotalCount] = useState(propTotalCount)
     const [currentPage, setCurrentPage] = useState(initialPage)
     const [hasNextPage, setHasNextPage] = useState(initialHasNextPage)
     const [isLoading, setIsLoading] = useState(false)
+
+    // Update properties when they change from parent (e.g., search results)
+    useEffect(() => {
+        setProperties(propProperties)
+        setTotalCount(propTotalCount)
+        if (isSearchResult) {
+            setCurrentPage(1)
+            setHasNextPage(false)
+        }
+    }, [propProperties, propTotalCount, isSearchResult])
 
     const handleLoadMore = useCallback(async () => {
         if (isLoading || !hasNextPage) return
@@ -69,17 +85,23 @@ export function PropertyGridWrapper({
 
     return (
         <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {searchQuery && (
+                <div className="mb-4 text-sm text-muted-foreground">
+                    Showing results for: <span className="font-medium text-foreground">&quot;{searchQuery}&quot;</span>
+                    {" "}({totalCount} {totalCount === 1 ? 'property' : 'properties'} found)
+                </div>
+            )}
             <PropertyGrid
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
                 properties={properties}
                 totalCount={totalCount}
-                isLoading={isLoading}
+                isLoading={isLoading || externalLoading}
                 pagination={{
                     page: currentPage,
-                    hasNextPage
+                    hasNextPage: isSearchResult ? false : hasNextPage
                 }}
-                onLoadMore={handleLoadMore}
+                onLoadMore={isSearchResult ? undefined : handleLoadMore}
                 onSortChange={handleSortChange}
             />
         </main >

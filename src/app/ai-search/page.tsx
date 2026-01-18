@@ -1,5 +1,4 @@
-import { Header } from "@/components/ai-listing-ui/header";
-import { PropertyGridWrapper } from "@/components/ai-listing-ui/propertyGridWrapper";
+import { AiSearchWrapper } from "@/components/ai-listing-ui/aiSearchWrapper";
 import { db } from "@/lib/db";
 import { 
   properties, 
@@ -170,14 +169,11 @@ export default async function AiSearch() {
   const { properties, totalCount, page, hasNextPage } = await fetchProperties(1, 10);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <PropertyGridWrapper
-        initialProperties={properties}
-        initialTotalCount={totalCount}
-        initialPage={page}
-        initialHasNextPage={hasNextPage}
-      />
-    </div>
+    <AiSearchWrapper
+      initialProperties={properties}
+      initialTotalCount={totalCount}
+      initialPage={page}
+      initialHasNextPage={hasNextPage}
+    />
   );
 }

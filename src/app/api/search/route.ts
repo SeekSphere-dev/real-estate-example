@@ -10,9 +10,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const data = await search(query)
-    console.log(data);
-    return NextResponse.json(data)
+    const properties = await search(query)
+    return NextResponse.json({
+      data: properties,
+      totalCount: properties.length,
+      query
+    })
   } catch (error) {
     console.error('Search error:', error)
     return NextResponse.json({ error: 'Search failed' }, { status: 500 })
